@@ -21,6 +21,7 @@ test_tcp(
 
     $res = $ua->get( $url . "private" );
     like $res->content, qr/login/i, "GET /private redirects to login";
+    like $res->content, qr/${url}private/i, "GET /login knows to return to /private";
 
     $res = $ua->get( $url . "private" );
     like $res->content, qr/private/i, "GET /private now works";
@@ -46,7 +47,7 @@ test_tcp(
 
     get '/login' => sub {
       session "user" => "Larry Wall";
-      return "login\n" . to_dumper(session);
+      return "login and to back to " . params->{return_url};
     };
 
     get '/logout' => sub {
