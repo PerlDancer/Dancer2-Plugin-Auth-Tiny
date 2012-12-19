@@ -40,7 +40,7 @@ sub _build_login {
   return sub {
     $conf ||= { _default_conf(), %{plugin_setting()} }; # lazy
     if ( session $conf->{logged_in_key} ) {
-      goto \&$coderef;
+      goto $coderef;
     }
     else {
       return redirect uri_for( $conf->{login_route},
@@ -104,7 +104,7 @@ The code above is roughly equivalent to this:
 
   get '/private' => sub {
     if ( session 'user' ) {
-      goto \&coderef;
+      goto $coderef;
     }
     else {
       return redirect uri_for( '/login',
@@ -134,7 +134,7 @@ criteria. For example, to add a check for the C<session 'is_admin'> key:
       my ($coderef) = @_;
       return sub {
         if ( session "is_admin" ) {
-          goto \&$coderef;
+          goto $coderef;
         }
         else {
           redirect '/access_denied';
@@ -159,7 +159,7 @@ You could pass additional arguments before the code reference like so:
       return sub {
         my @user_roles = @{ session("roles") || [] };
         if ( any_of(@requested_roles) eq any_of(@user_roles) {
-          goto \&$coderef;
+          goto $coderef;
         }
         else {
           redirect '/access_denied';
