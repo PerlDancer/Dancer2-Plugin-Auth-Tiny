@@ -3,11 +3,58 @@ use strict;
 use warnings;
 
 package Dancer::Plugin::Auth::Tiny;
-# ABSTRACT: No abstract given for Dancer::Plugin::Auth::Tiny
+# ABSTRACT: Require logged-in user for specified routes
 # VERSION
 
-# Dependencies
-use autodie 2.00;
+use Carp qw/croak/;
+
+use Dancer ':syntax';
+use Dancer::Plugin;
+
+my %conf = (
+  login_route   => '/login',
+  logged_in_key => 'user',
+  callback_key  => 'return_url',
+  %{ plugin_setting() },
+);
+
+my %dispatch = ( login => \&_build_login, );
+
+sub extend {
+  my ( $class, @args ) = @_;
+  unless ( @args % 2 == 0 ) {
+    croak "arguments to $class\->extend must be key/value pairs";
+  }
+  %dispatch = ( %dispatch, @args );
+}
+
+register 'needs' => sub {
+  my ( $self, $condition, @args ) = plugin_args(@_);
+
+  my $builder = $dispatch{$condition};
+
+  if ( ref $builder eq 'CODE' ) {
+    return $builder->(@args);
+  }
+  else {
+    croak "Unknown authorization condition '$condition'";
+  }
+};
+
+sub _build_login {
+  my ($coderef) = @_;
+  return sub {
+    if ( session $conf{logged_in_key} ) {
+      goto \&$coderef;
+    }
+    else {
+      return redirect uri_for( $conf{login_route},
+        { $conf{callback_key} => uri_for( request->path, request->params ) } );
+    }
+  };
+}
+
+register_plugin for_versions => [ 1, 2 ];
 
 1;
 
