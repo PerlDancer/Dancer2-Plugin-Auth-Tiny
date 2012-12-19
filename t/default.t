@@ -55,10 +55,6 @@ test_tcp(
       redirect uri_for('/public');
     };
 
-    get '/debug' => sub {
-      to_dumper(session);
-    };
-
     Dancer->dance;
   },
 );
