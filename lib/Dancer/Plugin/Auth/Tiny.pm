@@ -71,12 +71,12 @@ register_plugin for_versions => [ 1, 2 ];
 
   get '/login' => sub {
     # put 'return_url' in a hidden form field
-    template 'login' => { return_url => $params->{return_url} };
+    template 'login' => { return_url => params->{return_url} };
   };
 
   post '/login' => sub {
-    if ( _is_valid( $params->{user}, $params->{password} ) ) {
-      session user => $params->{user},
+    if ( _is_valid( params->{user}, params->{password} ) ) {
+      session user => params->{user},
       return redirect params->{return_url} || '/';
     }
     else {
@@ -95,10 +95,10 @@ It is not "Tiny" in the usual CPAN sense, but it is "Tiny" with respect to
 Dancer authentication plugins.  It provides very simple sugar to wrap route
 handlers with an authentication closure.
 
-The plugin provides the C<needs> keyword and a default C<login> critera that
+The plugin provides the C<needs> keyword and a default C<login> wrapper that
 you can use like this:
 
-  get '/private' => needs login => \&coderef;
+  get '/private' => needs login => $coderef;
 
 The code above is roughly equivalent to this:
 
@@ -150,12 +150,13 @@ arguments passed to C<needs>.
 
 You could pass additional arguments before the code reference like so:
 
+  # don't conflict with Dancer's any()
   use Syntax::Keyword::Junction 'any' => { -as => 'any_of' };
 
   Dancer::Plugin::Auth::Tiny->extend(
     any_role => sub {
       my $coderef = pop;
-      my @requsted_roles = @_;
+      my @requested_roles = @_;
       return sub {
         my @user_roles = @{ session("roles") || [] };
         if ( any_of(@requested_roles) eq any_of(@user_roles) {
