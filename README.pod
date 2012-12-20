@@ -137,7 +137,7 @@ You could pass additional arguments before the code reference like so:
     }
   );
 
-  get 'parental' => needs any_role => qw/mom dad/ => sub { ... };
+  get '/parental' => needs any_role => qw/mom dad/ => sub { ... };
 
 =head1 SEE ALSO
 
