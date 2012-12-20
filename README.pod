@@ -6,7 +6,7 @@ Dancer::Plugin::Auth::Tiny - Require logged-in user for specified routes
 
 =head1 VERSION
 
-version 0.001
+version 0.002
 
 =head1 SYNOPSIS
 
@@ -60,6 +60,12 @@ The code above is roughly equivalent to this:
 It is up to you to provide the '/login' route, handle actual authentication,
 and set C<user> session variable if login is successful.
 
+If the original request contains a parameter in the C<passthrough> list, it
+will be added to the login query. For example,
+C<http://example.com/private?user=dagolden> will be redirected as
+C<http://example.com/login?user=dagolden&return_url=...>.  This facilitates
+pre-populating a login form.
+
 =for Pod::Coverage extend
 
 =head1 CONFIGURATION
@@ -70,15 +76,19 @@ You may override any of these settings:
 
 =item *
 
-C<login_route> defines where a protected route is redirected. Default is '/login'.
+C<login_route: /login> -- defines where a protected route is redirected
 
 =item *
 
-C<logged_in_key> defines the session key that must be true to indicate a logged-in user. Default is 'user'.
+C<logged_in_key: user> -- defines the session key that must be true to indicate a logged-in user
 
 =item *
 
-C<callback_key> defines the parameter key with the original request URL that is passed to the login route. Default is 'return_url'.
+C<callback_key: return_url> -- defines the parameter key with the original request URL that is passed to the login route
+
+=item *
+
+C<passthrough: - user> -- a list of params that should be passed through to the login handler
 
 =back
 

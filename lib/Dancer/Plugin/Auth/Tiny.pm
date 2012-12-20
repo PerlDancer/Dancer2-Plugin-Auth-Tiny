@@ -38,13 +38,18 @@ sub extend {
 sub _build_login {
   my ($coderef) = @_;
   return sub {
-    $conf ||= { _default_conf(), %{plugin_setting()} }; # lazy
+    $conf ||= { _default_conf(), %{ plugin_setting() } }; # lazy
     if ( session $conf->{logged_in_key} ) {
       goto $coderef;
     }
     else {
-      return redirect uri_for( $conf->{login_route},
-        { $conf->{callback_key} => uri_for( request->path, request->params ) } );
+      my $query_params = params("query");
+      my $data =
+        { $conf->{callback_key} => uri_for( request->path, $query_params ) };
+      for my $k ( @{ $conf->{passthrough} } ) {
+        $data->{$k} = params->{$k} if params->{$k};
+      }
+      return redirect uri_for( $conf->{login_route}, $data );
     }
   };
 }
@@ -54,6 +59,7 @@ sub _default_conf {
     login_route   => '/login',
     logged_in_key => 'user',
     callback_key  => 'return_url',
+    passthrough   => [qw/user/],
   );
 }
 
@@ -115,14 +121,21 @@ The code above is roughly equivalent to this:
 It is up to you to provide the '/login' route, handle actual authentication,
 and set C<user> session variable if login is successful.
 
+If the original request contains a parameter in the C<passthrough> list, it
+will be added to the login query. For example,
+C<http://example.com/private?user=dagolden> will be redirected as
+C<http://example.com/login?user=dagolden&return_url=...>.  This facilitates
+pre-populating a login form.
+
 =head1 CONFIGURATION
 
 You may override any of these settings:
 
 =for :list
-* C<login_route> defines where a protected route is redirected. Default is '/login'.
-* C<logged_in_key> defines the session key that must be true to indicate a logged-in user. Default is 'user'.
-* C<callback_key> defines the parameter key with the original request URL that is passed to the login route. Default is 'return_url'.
+* C<login_route: /login> -- defines where a protected route is redirected
+* C<logged_in_key: user> -- defines the session key that must be true to indicate a logged-in user
+* C<callback_key: return_url> -- defines the parameter key with the original request URL that is passed to the login route
+* C<passthrough: - user> -- a list of params that should be passed through to the login handler
 
 =head1 EXTENDING
 
@@ -169,7 +182,7 @@ You could pass additional arguments before the code reference like so:
     }
   );
 
-  get 'parental' => needs any_role => qw/mom dad/ => sub { ... };
+  get '/parental' => needs any_role => qw/mom dad/ => sub { ... };
 
 =head1 SEE ALSO
 
