@@ -135,7 +135,7 @@ You may override any of these settings:
 * C<login_route: /login> -- defines where a protected route is redirected
 * C<logged_in_key: user> -- defines the session key that must be true to indicate a logged-in user
 * C<callback_key: return_url> -- defines the parameter key with the original request URL that is passed to the login route
-* C<passthrough: - user> -- a list of params that should be passed through to the login handler
+* C<passthrough: - user> -- a list of parameters that should be passed through to the login handler
 
 =head1 EXTENDING
 
