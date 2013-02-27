@@ -172,7 +172,7 @@ You could pass additional arguments before the code reference like so:
       my @requested_roles = @_;
       return sub {
         my @user_roles = @{ session("roles") || [] };
-        if ( any_of(@requested_roles) eq any_of(@user_roles) {
+        if ( any_of(@requested_roles) eq any_of(@user_roles) ) {
           goto $coderef;
         }
         else {
