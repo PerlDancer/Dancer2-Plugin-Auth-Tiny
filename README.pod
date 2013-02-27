@@ -6,7 +6,7 @@ Dancer::Plugin::Auth::Tiny - Require logged-in user for specified routes
 
 =head1 VERSION
 
-version 0.002
+version 0.003
 
 =head1 SYNOPSIS
 
@@ -127,7 +127,7 @@ You could pass additional arguments before the code reference like so:
       my @requested_roles = @_;
       return sub {
         my @user_roles = @{ session("roles") || [] };
-        if ( any_of(@requested_roles) eq any_of(@user_roles) {
+        if ( any_of(@requested_roles) eq any_of(@user_roles) ) {
           goto $coderef;
         }
         else {
