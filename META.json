@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
-   "name" : "Dancer-Plugin-Auth-Tiny",
+   "name" : "Dancer2-Plugin-Auth-Tiny",
    "no_index" : {
       "directory" : [
          "t",
@@ -41,8 +41,7 @@
       "runtime" : {
          "requires" : {
             "Carp" : "0",
-            "Dancer" : "0",
-            "Dancer::Plugin" : "0",
+            "Dancer2::Plugin" : "0",
             "perl" : "5.008001",
             "strict" : "0",
             "warnings" : "0"
@@ -50,6 +49,7 @@
       },
       "test" : {
          "requires" : {
+            "Dancer2" : "0",
             "ExtUtils::MakeMaker" : "0",
             "File::Find" : "0",
             "File::Spec::Functions" : "0",
@@ -62,24 +62,23 @@
       }
    },
    "provides" : {
-      "Dancer::Plugin::Auth::Tiny" : {
-         "file" : "lib/Dancer/Plugin/Auth/Tiny.pm",
+      "Dancer2::Plugin::Auth::Tiny" : {
+         "file" : "lib/Dancer2/Plugin/Auth/Tiny.pm",
          "version" : "0.003"
       }
    },
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/dagolden/dancer-plugin-auth-tiny/issues"
+         "web" : "https://github.com/dagolden/dancer2-plugin-auth-tiny/issues"
       },
-      "homepage" : "https://metacpan.org/release/Dancer-Plugin-Auth-Tiny",
+      "homepage" : "https://metacpan.org/release/Dancer2-Plugin-Auth-Tiny",
       "repository" : {
          "type" : "git",
-         "url" : "git://github.com/dagolden/dancer-plugin-auth-tiny.git",
-         "web" : "https://github.com/dagolden/dancer-plugin-auth-tiny"
+         "url" : "git://github.com/dagolden/dancer2-plugin-auth-tiny.git",
+         "web" : "https://github.com/dagolden/dancer2-plugin-auth-tiny"
       }
    },
-   "version" : "0.003",
-   "x_contributors" : []
+   "version" : "0.003"
 }
 

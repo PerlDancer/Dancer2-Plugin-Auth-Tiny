@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Dancer::Plugin::Auth::Tiny - Require logged-in user for specified routes
+Dancer2::Plugin::Auth::Tiny - Require logged-in user for specified routes
 
 =head1 VERSION
 
@@ -10,7 +10,7 @@ version 0.003
 
 =head1 SYNOPSIS
 
-  use Dancer::Plugin::Auth::Tiny;
+  use Dancer2::Plugin::Auth::Tiny;
 
   get '/private' => needs login => sub { ... };
 
@@ -33,11 +33,11 @@ version 0.003
 
 =head1 DESCRIPTION
 
-This L<Dancer> plugin provides an extremely simple way of requiring that a user
+This L<Dancer2> plugin provides an extremely simple way of requiring that a user
 be logged in before allowing access to certain routes.
 
 It is not "Tiny" in the usual CPAN sense, but it is "Tiny" with respect to
-Dancer authentication plugins.  It provides very simple sugar to wrap route
+Dancer2 authentication plugins.  It provides very simple sugar to wrap route
 handlers with an authentication closure.
 
 The plugin provides the C<needs> keyword and a default C<login> wrapper that
@@ -97,15 +97,15 @@ C<passthrough: - user> -- a list of parameters that should be passed through to 
 The class method C<extend> may be used to add (or override) authentication
 criteria. For example, to add a check for the C<session 'is_admin'> key:
 
-  Dancer::Plugin::Auth::Tiny->extend(
+  Dancer2::Plugin::Auth::Tiny->extend(
     admin => sub {
-      my ($coderef) = @_;
+      my ($dsl, $coderef) = @_;
       return sub {
-        if ( session "is_admin" ) {
+        if ( $dsl->app->session("is_admin") ) {
           goto $coderef;
         }
         else {
-          redirect '/access_denied';
+          $dsl->app->context->redirect '/access_denied';
         }
       };
     }
@@ -118,20 +118,20 @@ arguments passed to C<needs>.
 
 You could pass additional arguments before the code reference like so:
 
-  # don't conflict with Dancer's any()
+  # don't conflict with Dancer2's any()
   use Syntax::Keyword::Junction 'any' => { -as => 'any_of' };
 
-  Dancer::Plugin::Auth::Tiny->extend(
+  Dancer2::Plugin::Auth::Tiny->extend(
     any_role => sub {
       my $coderef = pop;
-      my @requested_roles = @_;
+      my ($dsl, @requested_roles) = @_;
       return sub {
-        my @user_roles = @{ session("roles") || [] };
+        my @user_roles = @{ $dsl->app->session("roles") || [] };
         if ( any_of(@requested_roles) eq any_of(@user_roles) ) {
           goto $coderef;
         }
         else {
-          redirect '/access_denied';
+          $dsl->app->context->redirect '/access_denied';
         }
       };
     }
@@ -141,17 +141,17 @@ You could pass additional arguments before the code reference like so:
 
 =head1 SEE ALSO
 
-For more complex L<Dancer> authentication, see:
+For more complex L<Dancer2> authentication, see:
 
 =over 4
 
 =item *
 
-L<Dancer::Plugin::Auth::Extensible>
+L<Dancer2::Plugin::Auth::Extensible> -- possibly not yet ported to Dancer2
 
 =item *
 
-L<Dancer::Plugin::Auth::RBAC>
+L<Dancer2::Plugin::Auth::RBAC> -- possibly not yet ported to Dancer2
 
 =back
 
@@ -165,14 +165,14 @@ L<Auth::Passphrase>
 
 =item *
 
-L<Dancer::Plugin::Passphrase>
+L<Dancer2::Plugin::Passphrase> -- possibly not yet ported to Dancer2
 
 =back
 
 =head1 ACKNOWLEDGMENTS
 
-This simplified Auth module was inspired by Dancer::Plugin::Auth::Extensible by
-David Precious and discussions about its API by member of the Dancer Users
+This simplified Auth module was inspired by L<Dancer::Plugin::Auth::Extensible>
+by David Precious and discussions about its API by member of the Dancer Users
 mailing list.
 
 =for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
@@ -182,7 +182,7 @@ mailing list.
 =head2 Bugs / Feature Requests
 
 Please report any bugs or feature requests through the issue tracker
-at L<https://github.com/dagolden/dancer-plugin-auth-tiny/issues>.
+at L<https://github.com/dagolden/dancer2-plugin-auth-tiny/issues>.
 You will be notified automatically of any progress on your issue.
 
 =head2 Source Code
@@ -190,9 +190,9 @@ You will be notified automatically of any progress on your issue.
 This is open source software.  The code repository is available for
 public review and contribution under the terms of the license.
 
-L<https://github.com/dagolden/dancer-plugin-auth-tiny>
+L<https://github.com/dagolden/dancer2-plugin-auth-tiny>
 
-  git clone git://github.com/dagolden/dancer-plugin-auth-tiny.git
+  git clone git://github.com/dagolden/dancer2-plugin-auth-tiny.git
 
 =head1 AUTHOR
 
