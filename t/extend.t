@@ -6,14 +6,14 @@ use File::Temp 0.19; # newdir
 use LWP::UserAgent;
 use Test::TCP;
 
-use Dancer ':syntax';
-use Dancer::Plugin::Auth::Tiny;
+use Dancer2 ':syntax';
+use Dancer2::Plugin::Auth::Tiny;
 
-Dancer::Plugin::Auth::Tiny->extend(
+Dancer2::Plugin::Auth::Tiny->extend(
   admin => sub {
-    my ($coderef) = @_;
+    my ($dsl, $coderef) = @_;
     return sub {
-      if ( session "is_admin" ) {
+      if ( $dsl->app->session("is_admin") ) {
         goto \&$coderef;
       }
       else {
@@ -68,11 +68,12 @@ test_tcp(
     };
 
     get '/logout' => sub {
-      session->destroy;
+      context->destroy_session;
       redirect uri_for('/public');
     };
 
-    Dancer->dance;
+    Dancer2->runner->server->port($port);
+    start;
   },
 );
 

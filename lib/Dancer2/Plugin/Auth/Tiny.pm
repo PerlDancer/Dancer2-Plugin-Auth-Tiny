@@ -2,68 +2,68 @@ use 5.008001;
 use strict;
 use warnings;
 
-package Dancer::Plugin::Auth::Tiny;
+package Dancer2::Plugin::Auth::Tiny;
 # ABSTRACT: Require logged-in user for specified routes
 # VERSION
 
 use Carp qw/croak/;
 
-use Dancer ':syntax';
-use Dancer::Plugin;
+use Dancer2::Plugin;
 
 my $conf;
 my %dispatch = ( login => \&_build_login, );
 
 register 'needs' => sub {
-  my ( $self, $condition, @args ) = plugin_args(@_);
+    my ( $dsl, $condition, @args ) = plugin_args(@_);
 
-  my $builder = $dispatch{$condition};
+    my $builder = $dispatch{$condition};
 
-  if ( ref $builder eq 'CODE' ) {
-    return $builder->(@args);
-  }
-  else {
-    croak "Unknown authorization condition '$condition'";
-  }
+    if ( ref $builder eq 'CODE' ) {
+        return $builder->( $dsl, @args );
+    }
+    else {
+        croak "Unknown authorization condition '$condition'";
+    }
 };
 
 sub extend {
-  my ( $class, @args ) = @_;
-  unless ( @args % 2 == 0 ) {
-    croak "arguments to $class\->extend must be key/value pairs";
-  }
-  %dispatch = ( %dispatch, @args );
+    my ( $class, @args ) = @_;
+    unless ( @args % 2 == 0 ) {
+        croak "arguments to $class\->extend must be key/value pairs";
+    }
+    %dispatch = ( %dispatch, @args );
 }
 
 sub _build_login {
-  my ($coderef) = @_;
-  return sub {
-    $conf ||= { _default_conf(), %{ plugin_setting() } }; # lazy
-    if ( session $conf->{logged_in_key} ) {
-      goto $coderef;
-    }
-    else {
-      my $query_params = params("query");
-      my $data =
-        { $conf->{callback_key} => uri_for( request->path, $query_params ) };
-      for my $k ( @{ $conf->{passthrough} } ) {
-        $data->{$k} = params->{$k} if params->{$k};
-      }
-      return redirect uri_for( $conf->{login_route}, $data );
-    }
-  };
+    my ( $dsl, $coderef ) = @_;
+    return sub {
+        $conf ||= { _default_conf(), %{ plugin_setting() } }; # lazy
+        my $request = $dsl->app->context->request;
+        if ( $dsl->app->session( $conf->{logged_in_key} ) ) {
+            goto $coderef;
+        }
+        else {
+            my $params = $request->params;
+            my $data =
+              { $conf->{callback_key} => $request->uri_for( $request->path, $params->{query} ) };
+            for my $k ( @{ $conf->{passthrough} } ) {
+                $data->{$k} = $params->{$k} if $params->{$k};
+            }
+            return $dsl->app->context->redirect( $request->uri_for( $conf->{login_route}, $data ) );
+        }
+    };
 }
 
 sub _default_conf {
-  return (
-    login_route   => '/login',
-    logged_in_key => 'user',
-    callback_key  => 'return_url',
-    passthrough   => [qw/user/],
-  );
+    return (
+        login_route   => '/login',
+        logged_in_key => 'user',
+        callback_key  => 'return_url',
+        passthrough   => [qw/user/],
+    );
 }
 
-register_plugin for_versions => [ 1, 2 ];
+register_plugin for_versions => [2];
 
 1;
 
@@ -71,7 +71,7 @@ register_plugin for_versions => [ 1, 2 ];
 
 =head1 SYNOPSIS
 
-  use Dancer::Plugin::Auth::Tiny;
+  use Dancer2::Plugin::Auth::Tiny;
 
   get '/private' => needs login => sub { ... };
 
@@ -94,11 +94,11 @@ register_plugin for_versions => [ 1, 2 ];
 
 =head1 DESCRIPTION
 
-This L<Dancer> plugin provides an extremely simple way of requiring that a user
+This L<Dancer2> plugin provides an extremely simple way of requiring that a user
 be logged in before allowing access to certain routes.
 
 It is not "Tiny" in the usual CPAN sense, but it is "Tiny" with respect to
-Dancer authentication plugins.  It provides very simple sugar to wrap route
+Dancer2 authentication plugins.  It provides very simple sugar to wrap route
 handlers with an authentication closure.
 
 The plugin provides the C<needs> keyword and a default C<login> wrapper that
@@ -142,15 +142,15 @@ You may override any of these settings:
 The class method C<extend> may be used to add (or override) authentication
 criteria. For example, to add a check for the C<session 'is_admin'> key:
 
-  Dancer::Plugin::Auth::Tiny->extend(
+  Dancer2::Plugin::Auth::Tiny->extend(
     admin => sub {
-      my ($coderef) = @_;
+      my ($dsl, $coderef) = @_;
       return sub {
-        if ( session "is_admin" ) {
+        if ( $dsl->app->session("is_admin") ) {
           goto $coderef;
         }
         else {
-          redirect '/access_denied';
+          $dsl->app->context->redirect '/access_denied';
         }
       };
     }
@@ -163,20 +163,20 @@ arguments passed to C<needs>.
 
 You could pass additional arguments before the code reference like so:
 
-  # don't conflict with Dancer's any()
+  # don't conflict with Dancer2's any()
   use Syntax::Keyword::Junction 'any' => { -as => 'any_of' };
 
-  Dancer::Plugin::Auth::Tiny->extend(
+  Dancer2::Plugin::Auth::Tiny->extend(
     any_role => sub {
       my $coderef = pop;
-      my @requested_roles = @_;
+      my ($dsl, @requested_roles) = @_;
       return sub {
-        my @user_roles = @{ session("roles") || [] };
+        my @user_roles = @{ $dsl->app->session("roles") || [] };
         if ( any_of(@requested_roles) eq any_of(@user_roles) ) {
           goto $coderef;
         }
         else {
-          redirect '/access_denied';
+          $dsl->app->context->redirect '/access_denied';
         }
       };
     }
@@ -186,24 +186,24 @@ You could pass additional arguments before the code reference like so:
 
 =head1 SEE ALSO
 
-For more complex L<Dancer> authentication, see:
+For more complex L<Dancer2> authentication, see:
 
 =for :list
-* L<Dancer::Plugin::Auth::Extensible>
-* L<Dancer::Plugin::Auth::RBAC>
+* L<Dancer2::Plugin::Auth::Extensible> -- possibly not yet ported to Dancer2
+* L<Dancer2::Plugin::Auth::RBAC> -- possibly not yet ported to Dancer2
 
 For password authentication algorithms for your own '/login' handler, see:
 
 =for :list
 * L<Auth::Passphrase>
-* L<Dancer::Plugin::Passphrase>
+* L<Dancer2::Plugin::Passphrase> -- possibly not yet ported to Dancer2
 
 =head1 ACKNOWLEDGMENTS
 
-This simplified Auth module was inspired by Dancer::Plugin::Auth::Extensible by
-David Precious and discussions about its API by member of the Dancer Users
+This simplified Auth module was inspired by L<Dancer::Plugin::Auth::Extensible>
+by David Precious and discussions about its API by member of the Dancer Users
 mailing list.
 
 =cut
 
-# vim: ts=2 sts=2 sw=2 et:
+# vim: ts=4 sts=4 sw=4 et:

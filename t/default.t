@@ -6,8 +6,8 @@ use File::Temp 0.19; # newdir
 use LWP::UserAgent;
 use Test::TCP;
 
-use Dancer ':syntax';
-use Dancer::Plugin::Auth::Tiny;
+use Dancer2 ':syntax';
+use Dancer2::Plugin::Auth::Tiny;
 
 test_tcp(
   client => sub {
@@ -51,11 +51,12 @@ test_tcp(
     };
 
     get '/logout' => sub {
-      session->destroy;
+      context->destroy_session;
       redirect uri_for('/public');
     };
 
-    Dancer->dance;
+    Dancer2->runner->server->port($port);
+    start;
   },
 );
 
