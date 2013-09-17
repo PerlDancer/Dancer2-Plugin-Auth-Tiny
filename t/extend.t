@@ -6,7 +6,7 @@ use File::Temp 0.19; # newdir
 use LWP::UserAgent;
 use Test::TCP;
 
-use Dancer2 ':syntax';
+use Dancer2;
 use Dancer2::Plugin::Auth::Tiny;
 
 Dancer2::Plugin::Auth::Tiny->extend(
