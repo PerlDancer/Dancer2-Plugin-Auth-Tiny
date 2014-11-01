@@ -38,7 +38,7 @@ sub _build_login {
     my ( $dsl, $coderef ) = @_;
     return sub {
         $conf ||= { _default_conf(), %{ plugin_setting() } }; # lazy
-        my $request = $dsl->app->context->request;
+        my $request = $dsl->app->request;
         if ( $dsl->app->session( $conf->{logged_in_key} ) ) {
             goto $coderef;
         }
@@ -49,7 +49,7 @@ sub _build_login {
             for my $k ( @{ $conf->{passthrough} } ) {
                 $data->{$k} = $params->{$k} if $params->{$k};
             }
-            return $dsl->app->context->redirect( $request->uri_for( $conf->{login_route}, $data ) );
+            return $dsl->app->redirect( $request->uri_for( $conf->{login_route}, $data ) );
         }
     };
 }
@@ -150,7 +150,7 @@ criteria. For example, to add a check for the C<session 'is_admin'> key:
           goto $coderef;
         }
         else {
-          $dsl->app->context->redirect '/access_denied';
+          $dsl->app->redirect '/access_denied';
         }
       };
     }
@@ -176,7 +176,7 @@ You could pass additional arguments before the code reference like so:
           goto $coderef;
         }
         else {
-          $dsl->app->context->redirect '/access_denied';
+          $dsl->app->redirect '/access_denied';
         }
       };
     }
