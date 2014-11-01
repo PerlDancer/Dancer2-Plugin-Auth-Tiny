@@ -24,7 +24,7 @@ use HTTP::Request;
     };
 
     get '/logout' => sub {
-      context->destroy_session;
+      app->destroy_session;
       redirect uri_for('/public');
     };
 }
