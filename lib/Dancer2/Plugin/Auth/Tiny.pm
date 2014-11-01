@@ -36,20 +36,22 @@ sub extend {
 
 sub _build_login {
     my ( $dsl, $coderef ) = @_;
+
+    $conf ||= { _default_conf(), %{ plugin_setting() } };
+
     return sub {
-        $conf ||= { _default_conf(), %{ plugin_setting() } }; # lazy
-        my $request = $dsl->app->context->request;
-        if ( $dsl->app->session( $conf->{logged_in_key} ) ) {
+        my $request = $dsl->app->request;
+        if ( $dsl->app->session->read( $conf->{logged_in_key} ) ) {
             goto $coderef;
         }
         else {
             my $params = $request->params;
             my $data =
-              { $conf->{callback_key} => $request->uri_for( $request->path, $params->{query} ) };
+              { $conf->{callback_key} => $request->uri_for( $request->path_info, $params->{query} ) };
             for my $k ( @{ $conf->{passthrough} } ) {
                 $data->{$k} = $params->{$k} if $params->{$k};
             }
-            return $dsl->app->context->redirect( $request->uri_for( $conf->{login_route}, $data ) );
+            return $dsl->app->redirect( $request->uri_for( $conf->{login_route}, $data ) );
         }
     };
 }
@@ -114,7 +116,7 @@ The code above is roughly equivalent to this:
     }
     else {
       return redirect uri_for( '/login',
-        { return_url => uri_for( request->path, request->params ) } );
+        { return_url => uri_for( request->path_info, request->params ) } );
     }
   };
 
@@ -146,11 +148,11 @@ criteria. For example, to add a check for the C<session 'is_admin'> key:
     admin => sub {
       my ($dsl, $coderef) = @_;
       return sub {
-        if ( $dsl->app->session("is_admin") ) {
+        if ( $dsl->app->session->read("is_admin") ) {
           goto $coderef;
         }
         else {
-          $dsl->app->context->redirect '/access_denied';
+          $dsl->app->redirect '/access_denied';
         }
       };
     }
@@ -171,12 +173,12 @@ You could pass additional arguments before the code reference like so:
       my $coderef = pop;
       my ($dsl, @requested_roles) = @_;
       return sub {
-        my @user_roles = @{ $dsl->app->session("roles") || [] };
+        my @user_roles = @{ $dsl->app->session->read("roles") || [] };
         if ( any_of(@requested_roles) eq any_of(@user_roles) ) {
           goto $coderef;
         }
         else {
-          $dsl->app->context->redirect '/access_denied';
+          $dsl->app->redirect '/access_denied';
         }
       };
     }
