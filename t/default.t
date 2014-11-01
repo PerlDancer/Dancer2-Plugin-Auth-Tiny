@@ -85,7 +85,9 @@ subtest 'logout' => sub {
     $jar->add_cookie_header($req);
 
     my $res = $test->request($req);
-    like $res->content, qr/index/i, "GET /logout redirects to public";
+    ok $res->is_redirect, 'GET /logout redirects';
+    like $res->header('Location'), qr{/public}, 'GET /logout redirects to public';
+    is $res->content, '', 'Content is empty when receiving redirect';
 
     $jar->extract_cookies($res);
 };
