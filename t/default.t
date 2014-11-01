@@ -93,7 +93,7 @@ subtest 'logout' => sub {
 };
 
 subtest 'private redirects again' => sub {
-    my $req = HTTP::Request->new( GET => "$url/logout" );
+    my $req = HTTP::Request->new( GET => "$url/private" );
     $jar->add_cookie_header($req);
 
     my $res = $test->request($req);
