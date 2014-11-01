@@ -41,7 +41,7 @@ sub _build_login {
 
     return sub {
         my $request = $dsl->app->request;
-        if ( $dsl->app->session( $conf->{logged_in_key} ) ) {
+        if ( $dsl->app->session->read( $conf->{logged_in_key} ) ) {
             goto $coderef;
         }
         else {
@@ -148,7 +148,7 @@ criteria. For example, to add a check for the C<session 'is_admin'> key:
     admin => sub {
       my ($dsl, $coderef) = @_;
       return sub {
-        if ( $dsl->app->session("is_admin") ) {
+        if ( $dsl->app->session->read("is_admin") ) {
           goto $coderef;
         }
         else {
@@ -173,7 +173,7 @@ You could pass additional arguments before the code reference like so:
       my $coderef = pop;
       my ($dsl, @requested_roles) = @_;
       return sub {
-        my @user_roles = @{ $dsl->app->session("roles") || [] };
+        my @user_roles = @{ $dsl->app->session->read("roles") || [] };
         if ( any_of(@requested_roles) eq any_of(@user_roles) ) {
           goto $coderef;
         }
