@@ -36,8 +36,10 @@ sub extend {
 
 sub _build_login {
     my ( $dsl, $coderef ) = @_;
+
+    $conf ||= { _default_conf(), %{ plugin_setting() } };
+
     return sub {
-        $conf ||= { _default_conf(), %{ plugin_setting() } }; # lazy
         my $request = $dsl->app->request;
         if ( $dsl->app->session( $conf->{logged_in_key} ) ) {
             goto $coderef;
