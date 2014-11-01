@@ -31,9 +31,10 @@ use HTTP::Request;
 
 my $test = Plack::Test->create( App->to_app );
 my $jar  = HTTP::Cookies->new();
+my $url  = 'http://localhost';
 
 subtest '/public' => sub {
-    my $req = HTTP::Request->new( GET => '/public' );
+    my $req = HTTP::Request->new( GET => "$url/public" );
     $jar->add_cookie_header($req);
 
     my $res = $test->request($req);
@@ -46,7 +47,7 @@ subtest 'changing private' => sub {
     my $login_url;
 
     {
-        my $req = HTTP::Request->new( GET => '/private' );
+        my $req = HTTP::Request->new( GET => "$url/private" );
         $jar->add_cookie_header($req);
 
         my $res = $test->request($req);
@@ -69,7 +70,7 @@ subtest 'changing private' => sub {
     }
 
     {
-        my $req = HTTP::Request->new( GET => 'http://localhost/private' );
+        my $req = HTTP::Request->new( GET => "$url/private" );
         $jar->add_cookie_header($req);
 
         my $res = $test->request($req);
@@ -80,7 +81,7 @@ subtest 'changing private' => sub {
 };
 
 subtest 'logout' => sub {
-    my $req = HTTP::Request->new( GET => '/logout' );
+    my $req = HTTP::Request->new( GET => "$url/logout" );
     $jar->add_cookie_header($req);
 
     my $res = $test->request($req);
@@ -90,7 +91,7 @@ subtest 'logout' => sub {
 };
 
 subtest 'private redirects again' => sub {
-    my $req = HTTP::Request->new( GET => '/logout' );
+    my $req = HTTP::Request->new( GET => "$url/logout" );
     $jar->add_cookie_header($req);
 
     my $res = $test->request($req);
