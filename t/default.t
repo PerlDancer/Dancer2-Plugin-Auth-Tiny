@@ -43,20 +43,24 @@ subtest '/public' => sub {
 };
 
 subtest 'changing private' => sub {
+    my $login_url;
+
     {
         my $req = HTTP::Request->new( GET => '/private' );
         $jar->add_cookie_header($req);
 
         my $res = $test->request($req);
         ok $res->is_redirect, 'GET /private redirects';
-        like $res->header('Location'), qr{/login}, 'GET /private redirects to /login';
+        like $res->header('Location'), qr{/login\?return_url=}, 'GET /private redirects to /login';
         is $res->content, '', 'Content is empty when receiving redirect';
+
+        $login_url = $res->header('Location');
 
         $jar->extract_cookies($res);
     }
 
     {
-        my $req = HTTP::Request->new( GET => '/login' );
+        my $req = HTTP::Request->new( GET => $login_url );
         $jar->add_cookie_header($req);
 
         my $res = $test->request($req);
@@ -65,7 +69,7 @@ subtest 'changing private' => sub {
     }
 
     {
-        my $req = HTTP::Request->new( GET => '/private' );
+        my $req = HTTP::Request->new( GET => 'http://localhost/private' );
         $jar->add_cookie_header($req);
 
         my $res = $test->request($req);
