@@ -1,40 +1,17 @@
 use strict;
 use warnings;
-use Test::More 0.96 import => ['!pass'];
-
+use Test::More 0.96;
 use File::Temp 0.19; # newdir
-use LWP::UserAgent;
-use Test::TCP;
+use Plack::Test;
+use HTTP::Cookies;
+use HTTP::Request;
 
-test_tcp(
-  client => sub {
-    my $port = shift;
-    my $url  = "http://localhost:$port/";
-
-    my $ua = LWP::UserAgent->new( cookie_jar => {} );
-    push @{ $ua->requests_redirectable }, 'POST';
-
-    my $res = $ua->get( $url . "public" );
-    like $res->content, qr/index/i, "GET /public works";
-
-    $res = $ua->post( $url . "private", { foo => 'bar', user => 'Larry' } );
-    like $res->content, qr/params:\s*$/i,
-      "POST /private doesn't leak post params in redirect"
-        or diag explain $res;
-
-    $res = $ua->post( $url . "private", { foo => 'bar' } );
-    like $res->content, qr/params: foo:bar/i,
-      "POST /private after login has parameters";
-  },
-
-  server => sub {
-    my $port = shift;
+{
+    package App;
 
     use Dancer2;
     use Dancer2::Plugin::Auth::Tiny;
 
-    set confdir     => '.';
-    set port        => $port, startup_info => 0;
     set show_errors => 1;
     set session     => 'Simple';
 
@@ -49,14 +26,65 @@ test_tcp(
     };
 
     get '/logout' => sub {
-      context->destroy_session;
+      app->destroy_session;
       redirect uri_for('/public');
     };
+}
 
-    Dancer2->runner->server->port($port);
-    start;
-  },
-);
+my $test = Plack::Test->create( App->to_app );
+my $url  = "http://localhost";
+
+subtest 'defaults' => sub {
+    my $res = $test->request( HTTP::Request->new( GET => "$url/public" ) );
+    like $res->content, qr/index/i, "GET /public works";
+};
+
+use HTTP::Request::Common;
+subtest 'login with post' => sub {
+    my $jar = HTTP::Cookies->new();
+    my $redir_url;
+
+    {
+        my $req = POST '/private', { foo => 'bar', user => 'Larry' };
+        my $res = $test->request($req);
+
+        ok $res->is_redirect, '/private redirects';
+        like $res->header('Location'), qr{/login}, 'POST /private redirects to /login';
+        is $res->content, '', 'Content is empty when receiving redirect';
+
+        $redir_url = $res->header('Location');
+    }
+
+    {
+        my $res = $test->request( GET $redir_url );
+
+        ok $res->is_redirect, '/login redirects';
+        like $res->header('Location'), qr{/private}, '/login redirects back to /private';
+
+        $redir_url = $res->header('Location');
+        $jar->extract_cookies($res);
+    }
+
+    {
+        my $req = GET $redir_url;
+        $jar->add_cookie_header($req);
+
+        my $res = $test->request($req);
+
+        like $res->content, qr/params:\s*$/i,
+          "POST /private doesn't leak post params in redirect"
+            or diag explain $res;
+    }
+
+    {
+        my $req = POST "$url/private", { foo => 'bar' };
+        $jar->add_cookie_header($req);
+
+        my $res = $test->request($req);
+        like $res->content, qr/params: foo:bar/i,
+          "POST /private after login has parameters";
+    }
+};
 
 done_testing;
 # COPYRIGHT
