@@ -48,8 +48,9 @@ subtest 'changing private' => sub {
         $jar->add_cookie_header($req);
 
         my $res = $test->request($req);
-        like $res->content, qr/login/i, "GET /private redirects to login";
-        like $res->content, qr/\/private/i, "GET /login knows to return to /private";
+        is $res->code, 302, 'GET /private redirects';
+        like $res->header('Location'), qr{/login}, 'GET /private redirects to /login';
+        is $res->content, '', 'Content is empty when receiving redirect';
 
         $jar->extract_cookies($res);
     }
