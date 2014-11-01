@@ -1,43 +1,16 @@
 use strict;
 use warnings;
-use Test::More 0.96 import => ['!pass'];
-
+use Test::More 0.96;
 use File::Temp 0.19; # newdir
-use LWP::UserAgent;
-use Test::TCP;
+use Plack::Test;
+use HTTP::Cookies;
+use HTTP::Request;
 
-use Dancer2;
-use Dancer2::Plugin::Auth::Tiny;
+{
+    package App;
+    use Dancer2;
+    use Dancer2::Plugin::Auth::Tiny;
 
-test_tcp(
-  client => sub {
-    my $port = shift;
-    my $url  = "http://localhost:$port/";
-
-    my $ua = LWP::UserAgent->new( cookie_jar => {} );
-
-    my $res = $ua->get( $url . "public" );
-    like $res->content, qr/index/i, "GET /public works";
-
-    $res = $ua->get( $url . "private" );
-    like $res->content, qr/login/i, "GET /private redirects to login";
-    like $res->content, qr/${url}private/i, "GET /login knows to return to /private";
-
-    $res = $ua->get( $url . "private" );
-    like $res->content, qr/private/i, "GET /private now works";
-
-    $res = $ua->get( $url . "logout" );
-    like $res->content, qr/index/i, "GET /logout redirects to public";
-
-    $res = $ua->get( $url . "private" );
-    like $res->content, qr/login/i, "GET /private redirects to login again";
-  },
-
-  server => sub {
-    my $port = shift;
-
-    set confdir     => '.';
-    set port        => $port, startup_info => 0;
     set show_errors => 1;
     set session     => 'Simple';
 
@@ -54,11 +27,73 @@ test_tcp(
       context->destroy_session;
       redirect uri_for('/public');
     };
+}
 
-    Dancer2->runner->server->port($port);
-    start;
-  },
-);
+my $test = Plack::Test->create( App->to_app );
+my $jar  = HTTP::Cookies->new();
+
+subtest '/public' => sub {
+    my $req = HTTP::Request->new( GET => '/public' );
+    $jar->add_cookie_header($req);
+
+    my $res = $test->request($req);
+    like $res->content, qr/index/i, "GET /public works";
+
+    $jar->extract_cookies($res);
+};
+
+subtest 'changing private' => sub {
+    {
+        my $req = HTTP::Request->new( GET => '/private' );
+        $jar->add_cookie_header($req);
+
+        my $res = $test->request($req);
+        like $res->content, qr/login/i, "GET /private redirects to login";
+        like $res->content, qr/\/private/i, "GET /login knows to return to /private";
+
+        $jar->extract_cookies($res);
+    }
+
+    {
+        my $req = HTTP::Request->new( GET => '/login' );
+        $jar->add_cookie_header($req);
+
+        my $res = $test->request($req);
+        like $res->content, qr/login and to back to/, 'GET /login succeeds';
+        $jar->extract_cookies($res);
+    }
+
+    {
+        my $req = HTTP::Request->new( GET => '/private' );
+        $jar->add_cookie_header($req);
+
+        my $res = $test->request($req);
+        like $res->content, qr/private/i, "GET /private now works";
+
+        $jar->extract_cookies($res);
+    }
+};
+
+subtest 'logout' => sub {
+    my $req = HTTP::Request->new( GET => '/logout' );
+    $jar->add_cookie_header($req);
+
+    my $res = $test->request($req);
+    like $res->content, qr/index/i, "GET /logout redirects to public";
+
+    $jar->extract_cookies($res);
+};
+
+subtest 'private redirects again' => sub {
+    my $req = HTTP::Request->new( GET => '/logout' );
+    $jar->add_cookie_header($req);
+
+    my $res = $test->request($req);
+    like $res->content, qr/login/i, "GET /private redirects to login again";
+
+    $jar->extract_cookies($res);
+};
 
 done_testing;
 # COPYRIGHT
+
