@@ -191,19 +191,19 @@ You could pass additional arguments before the code reference like so:
 For more complex L<Dancer2> authentication, see:
 
 =for :list
-* L<Dancer2::Plugin::Auth::Extensible> -- possibly not yet ported to Dancer2
-* L<Dancer2::Plugin::Auth::RBAC> -- possibly not yet ported to Dancer2
+* L<Dancer2::Plugin::Auth::Extensible>
+* L<Dancer2::Plugin::Auth::RBAC> -- possibly not yet (or going to be) ported to Dancer2
 
 For password authentication algorithms for your own '/login' handler, see:
 
 =for :list
 * L<Auth::Passphrase>
-* L<Dancer2::Plugin::Passphrase> -- possibly not yet ported to Dancer2
+* L<Dancer::Plugin::Passphrase> -- possibly not yet ported to Dancer2
 
 =head1 ACKNOWLEDGMENTS
 
 This simplified Auth module was inspired by L<Dancer::Plugin::Auth::Extensible>
-by David Precious and discussions about its API by member of the Dancer Users
+by David Precious and discussions about its API by members of the Dancer Users
 mailing list.
 
 =cut
