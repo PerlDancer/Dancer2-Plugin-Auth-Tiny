@@ -1,5 +1,5 @@
 requires "Carp" => "0";
-requires "Dancer2::Plugin" => "0";
+requires "Dancer2::Plugin" => "0.153000";
 requires "perl" => "5.008001";
 requires "strict" => "0";
 requires "warnings" => "0";
