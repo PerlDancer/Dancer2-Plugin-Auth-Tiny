@@ -4,7 +4,7 @@ use warnings;
 
 package Dancer2::Plugin::Auth::Tiny;
 # ABSTRACT: Require logged-in user for specified routes
-# VERSION
+our $VERSION = '0.004';
 
 use Carp qw/croak/;
 
