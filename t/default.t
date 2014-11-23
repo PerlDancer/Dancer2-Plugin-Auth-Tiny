@@ -53,7 +53,10 @@ subtest 'changing private' => sub {
         my $res = $test->request($req);
         ok $res->is_redirect, 'GET /private redirects';
         like $res->header('Location'), qr{/login\?return_url=}, 'GET /private redirects to /login';
-        is $res->content, '', 'Content is empty when receiving redirect';
+        like
+            $res->content,
+            qr{This item has moved},
+            'Correct content';
 
         $login_url = $res->header('Location');
 
@@ -87,7 +90,10 @@ subtest 'logout' => sub {
     my $res = $test->request($req);
     ok $res->is_redirect, 'GET /logout redirects';
     like $res->header('Location'), qr{/public}, 'GET /logout redirects to public';
-    is $res->content, '', 'Content is empty when receiving redirect';
+    like
+        $res->content,
+        qr{This item has moved},
+        'Correct content';
 
     $jar->extract_cookies($res);
 };
@@ -99,7 +105,10 @@ subtest 'private redirects again' => sub {
     my $res = $test->request($req);
     ok $res->is_redirect, 'GET /private redirects';
     like $res->header('Location'), qr{/login}, 'GET /private redirects to login again';
-    is $res->content, '', 'Content is empty when receiving redirect';
+    like
+        $res->content,
+        qr{This item has moved},
+        'Correct content';
 };
 
 done_testing;

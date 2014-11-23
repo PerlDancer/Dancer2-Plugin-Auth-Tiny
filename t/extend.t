@@ -84,7 +84,10 @@ subtest 'logging in and logging out' => sub {
         my $res = $test->request($req);
         ok $res->is_redirect, 'GET /logout redirects';
         like $res->header('Location'), qr{/public}, 'GET /logout redirects to public';
-        is $res->content, '', 'Content is empty when receiving redirect';
+        like
+            $res->content,
+            qr{This item has moved},
+            'Correct content';
 
         $jar->extract_cookies($res);
     }

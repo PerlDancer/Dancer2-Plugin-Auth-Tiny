@@ -50,7 +50,10 @@ subtest 'login with post' => sub {
 
         ok $res->is_redirect, '/private redirects';
         like $res->header('Location'), qr{/login}, 'POST /private redirects to /login';
-        is $res->content, '', 'Content is empty when receiving redirect';
+        like
+            $res->content,
+            qr{This item has moved},
+            'Correct content';
 
         $redir_url = $res->header('Location');
     }

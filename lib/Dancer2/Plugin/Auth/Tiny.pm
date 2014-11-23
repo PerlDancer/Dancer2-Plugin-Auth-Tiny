@@ -47,7 +47,7 @@ sub _build_login {
         else {
             my $params = $request->params;
             my $data =
-              { $conf->{callback_key} => $request->uri_for( $request->path_info, $params->{query} ) };
+              { $conf->{callback_key} => $request->uri_for( $request->path, $params->{query} ) };
             for my $k ( @{ $conf->{passthrough} } ) {
                 $data->{$k} = $params->{$k} if $params->{$k};
             }
@@ -116,7 +116,7 @@ The code above is roughly equivalent to this:
     }
     else {
       return redirect uri_for( '/login',
-        { return_url => uri_for( request->path_info, request->params ) } );
+        { return_url => uri_for( request->path, request->params ) } );
     }
   };
 

@@ -53,7 +53,10 @@ subtest 'private' => sub {
         my $res = $test->request( GET "$url/private" );
 
         ok $res->is_redirect, '/private redirects';
-        is $res->content, '', 'No content when return is redirect';
+        like
+            $res->content,
+            qr{This item has moved},
+            'Correct content';
 
         $redir_url = $res->header('Location');
 

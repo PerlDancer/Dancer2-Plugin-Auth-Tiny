@@ -1,8 +1,9 @@
 use strict;
 use warnings;
-use Test::More 0.96 tests => 2;
+use Test::More 0.96 tests => 3;
 use Plack::Test;
 use Plack::Builder;
+use Plack::Request;
 use HTTP::Request::Common;
 
 {
@@ -45,5 +46,29 @@ subtest 'Authenticate' => sub {
         qr{\?return_url=.+%2Fauth%2Ftry},
         '/auth/try return url parameter is /auth/try',
     );
+};
+
+subtest 'Plack::Requst' => sub {
+    my $test = Plack::Test->create(
+        builder {
+            mount '/' => sub {
+                my $r = Plack::Request->new( $_[0] );
+                ::is( $r->uri->path, '/', 'GET / uri->path' );
+                ::is( $r->path_info, '/', 'GET / path_info' );
+                ::is( $r->path, '/', 'GET / path' );
+            };
+
+            mount '/api' => sub {
+                my $r = Plack::Request->new( $_[0] );
+                ::is( $r->uri->path, '/api/', 'GET /api/ uri->path' );
+                ::is( $r->path_info, '/', 'GET /api/ path_info' );
+                ::is( $r->path, '/', 'GET / path' );
+            };
+        }
+    );
+
+
+    $test->request( GET '/' );
+    $test->request( GET '/api/' );
 };
 
