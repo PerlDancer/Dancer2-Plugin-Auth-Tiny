@@ -2,6 +2,10 @@ Revision history for Dancer2-Plugin-Auth-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - Revert fix since Dancer2 0.154000 fixed it itself.
+
 0.004     2014-11-03 19:41:23+01:00 Europe/Amsterdam
 
     [CHANGED]
