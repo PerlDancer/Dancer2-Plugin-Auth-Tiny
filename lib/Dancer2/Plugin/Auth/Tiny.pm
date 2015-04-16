@@ -84,7 +84,7 @@ register_plugin for_versions => [2];
 
   post '/login' => sub {
     if ( _is_valid( params->{user}, params->{password} ) ) {
-      session user => params->{user},
+      session user => params->{user};
       return redirect params->{return_url} || '/';
     }
     else {
