@@ -193,12 +193,13 @@ For more complex L<Dancer2> authentication, see:
 =for :list
 * L<Dancer2::Plugin::Auth::Extensible>
 * L<Dancer2::Plugin::Auth::RBAC> -- possibly not yet (or going to be) ported to Dancer2
+* L<Dancer2::Plugin::Auth::YARBAC>
 
 For password authentication algorithms for your own '/login' handler, see:
 
 =for :list
 * L<Auth::Passphrase>
-* L<Dancer::Plugin::Passphrase> -- possibly not yet ported to Dancer2
+* L<Dancer2::Plugin::Passphrase>
 
 =head1 ACKNOWLEDGMENTS
 
