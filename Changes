@@ -2,6 +2,11 @@ Revision history for Dancer2-Plugin-Auth-Tiny
 
 {{$NEXT}}
 
+    [DOCUMENTED]
+
+    - Fix/update documentation for references.
+      (Jason Crome, Jim Davis)
+
 0.005     2014-11-24 00:58:46+01:00 Europe/Amsterdam
 
     [CHANGED]
