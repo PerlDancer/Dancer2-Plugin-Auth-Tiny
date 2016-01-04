@@ -14,7 +14,7 @@ my $conf;
 my %dispatch = ( login => \&_build_login, );
 
 register 'needs' => sub {
-    my ( $dsl, $condition, @args ) = plugin_args(@_);
+    my ( $dsl, $condition, @args ) = @_;
 
     my $builder = $dispatch{$condition};
 
