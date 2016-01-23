@@ -4,7 +4,7 @@ Revision history for Dancer2-Plugin-Auth-Tiny
 
     [DOCUMENTED]
 
-    - Correct example in documentation.
+    - Correct "extend" example in documentation.
       (Biafra)
 
 0.008     2016-01-23 18:20:25+01:00 Europe/Amsterdam
