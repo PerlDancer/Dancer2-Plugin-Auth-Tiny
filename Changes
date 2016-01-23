@@ -2,6 +2,11 @@ Revision history for Dancer2-Plugin-Auth-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - Stop using deprecated plugin_args, removes warnings.
+      (Peter Mottram)
+
 0.007     2015-10-02 19:21:33+02:00 Europe/Amsterdam
 
     [DOCUMENTED]
