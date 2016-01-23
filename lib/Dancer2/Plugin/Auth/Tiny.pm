@@ -152,7 +152,7 @@ criteria. For example, to add a check for the C<session 'is_admin'> key:
           goto $coderef;
         }
         else {
-          $dsl->app->redirect '/access_denied';
+          $dsl->app->redirect('/access_denied');
         }
       };
     }
