@@ -7,19 +7,18 @@ package Dancer2::Plugin::Auth::Tiny;
 our $VERSION = '0.009';
 
 use Carp qw/croak/;
+use Dancer2::Core::Types qw/ArrayRef Dancer2Prefix Str/;
+use Dancer2::Plugin 0.200000;
 
-use Dancer2::Plugin;
-
-my $conf;
 my %dispatch = ( login => \&_build_login, );
 
-register 'needs' => sub {
-    my ( $dsl, $condition, @args ) = @_;
+plugin_keywords 'needs' => sub {
+    my ( $plugin, $condition, @args ) = @_;
 
     my $builder = $dispatch{$condition};
 
     if ( ref $builder eq 'CODE' ) {
-        return $builder->( $dsl, @args );
+        return $builder->( $plugin, @args );
     }
     else {
         croak "Unknown authorization condition '$condition'";
@@ -35,37 +34,48 @@ sub extend {
 }
 
 sub _build_login {
-    my ( $dsl, $coderef ) = @_;
-
-    $conf ||= { _default_conf(), %{ plugin_setting() } };
+    my ( $plugin, $coderef ) = @_;
 
     return sub {
-        my $request = $dsl->app->request;
-        if ( $dsl->app->session->read( $conf->{logged_in_key} ) ) {
+        my $request = $plugin->app->request;
+        if ( $plugin->app->session->read( $plugin->logged_in_key ) ) {
             goto $coderef;
         }
         else {
             my $params = $request->params;
             my $data =
-              { $conf->{callback_key} => $request->uri_for( $request->path, $params->{query} ) };
-            for my $k ( @{ $conf->{passthrough} } ) {
+              { $plugin->callback_key => $request->uri_for( $request->path, $params->{query} ) };
+            for my $k ( @{ $plugin->passthrough } ) {
                 $data->{$k} = $params->{$k} if $params->{$k};
             }
-            return $dsl->app->redirect( $request->uri_for( $conf->{login_route}, $data ) );
+            return $plugin->app->redirect( $request->uri_for( $plugin->login_route, $data ) );
         }
     };
 }
 
-sub _default_conf {
-    return (
-        login_route   => '/login',
-        logged_in_key => 'user',
-        callback_key  => 'return_url',
-        passthrough   => [qw/user/],
-    );
-}
+has login_route => (
+    is => 'ro',
+    isa => Dancer2Prefix,
+    from_config => sub { '/login' },
+);
 
-register_plugin for_versions => [2];
+has logged_in_key => (
+    is => 'ro',
+    isa => Str,
+    from_config => sub { 'user' },
+);
+
+has callback_key => (
+    is => 'ro',
+    isa => Str,
+    from_config => sub { 'return_url' },
+);
+
+has passthrough => (
+    is => 'ro',
+    isa => ArrayRef,
+    from_config => sub { [qw/user/] },
+);
 
 1;
 
@@ -146,13 +156,13 @@ criteria. For example, to add a check for the C<session 'is_admin'> key:
 
   Dancer2::Plugin::Auth::Tiny->extend(
     admin => sub {
-      my ($dsl, $coderef) = @_;
+      my ($plugin, $coderef) = @_;
       return sub {
-        if ( $dsl->app->session->read("is_admin") ) {
+        if ( $plugin->app->session->read("is_admin") ) {
           goto $coderef;
         }
         else {
-          $dsl->app->redirect('/access_denied');
+          $plugin->app->redirect('/access_denied');
         }
       };
     }
@@ -171,14 +181,14 @@ You could pass additional arguments before the code reference like so:
   Dancer2::Plugin::Auth::Tiny->extend(
     any_role => sub {
       my $coderef = pop;
-      my ($dsl, @requested_roles) = @_;
+      my ($plugin, @requested_roles) = @_;
       return sub {
-        my @user_roles = @{ $dsl->app->session->read("roles") || [] };
+        my @user_roles = @{ $plugin->app->session->read("roles") || [] };
         if ( any_of(@requested_roles) eq any_of(@user_roles) ) {
           goto $coderef;
         }
         else {
-          $dsl->app->redirect '/access_denied';
+          $plugin->app->redirect '/access_denied';
         }
       };
     }

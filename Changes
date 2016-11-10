@@ -1,6 +1,10 @@
 Revision history for Dancer2-Plugin-Auth-Tiny
 
 {{$NEXT}}
+    [CHANGED]
+
+    - Update to Dancer2::Plugin 0.200000 (Plugin2).
+      (Peter Mottram)
 
     [DOCUMENTED]
 
