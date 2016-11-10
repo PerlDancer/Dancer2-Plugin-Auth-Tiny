@@ -207,6 +207,8 @@ This simplified Auth module was inspired by L<Dancer::Plugin::Auth::Extensible>
 by David Precious and discussions about its API by members of the Dancer Users
 mailing list.
 
+=for Pod::Coverage ClassHooks PluginKeyword dancer_app execute_plugin_hook hook on_plugin_import plugin_args plugin_setting register register_hook register_plugin request var
+
 =cut
 
 # vim: ts=4 sts=4 sw=4 et:
